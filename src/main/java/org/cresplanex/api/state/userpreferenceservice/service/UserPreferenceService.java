@@ -1,9 +1,6 @@
 package org.cresplanex.api.state.userpreferenceservice.service;
 
-import build.buf.gen.job.v1.CreateJobRequest;
-import build.buf.gen.job.v1.JobServiceGrpc;
 import lombok.extern.slf4j.Slf4j;
-import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.cresplanex.api.state.common.entity.EntityWithPrevious;
 import org.cresplanex.api.state.common.service.BaseService;
 import org.cresplanex.api.state.userpreferenceservice.entity.UserPreferenceEntity;
@@ -15,14 +12,12 @@ import org.cresplanex.core.saga.orchestration.SagaInstanceFactory;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Slf4j
 @RequiredArgsConstructor
 @Service
-@Transactional
 public class UserPreferenceService extends BaseService {
 
     private final UserPreferenceRepository userPreferenceRepository;
@@ -53,7 +48,9 @@ public class UserPreferenceService extends BaseService {
     }
 
     public UserPreferenceEntity create(UserPreferenceEntity preference) {
-        return userPreferenceRepository.save(preference);
+        preference = userPreferenceRepository.save(preference);
+        throw new UnsupportedOperationException("Not implemented");
+//        return preference;
     }
 
     public void undoCreate(String userPreferenceId) {

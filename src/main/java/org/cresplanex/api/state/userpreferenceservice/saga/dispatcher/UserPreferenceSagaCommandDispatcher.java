@@ -19,7 +19,7 @@ public class UserPreferenceSagaCommandDispatcher extends BaseSagaCommandDispatch
             UserPreferenceSagaCommandHandlers userPreferenceSagaCommandHandlers,
             SagaCommandDispatcherFactory sagaCommandDispatcherFactory) {
         return sagaCommandDispatcherFactory.make(
-                this.getDispatcherId(ServiceType.NOVA_USER_PREFERENCE, SagaCommandChannel.USER_PREFERENCE),
+                this.getDispatcherId(SagaCommandChannel.USER_PREFERENCE),
                 userPreferenceSagaCommandHandlers.commandHandlers());
     }
 }

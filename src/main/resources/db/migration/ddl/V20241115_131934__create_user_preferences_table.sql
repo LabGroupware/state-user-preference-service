@@ -1,6 +1,7 @@
 CREATE TABLE user_preferences (
     user_preference_id VARCHAR(100) PRIMARY KEY,
     user_id VARCHAR(100) NOT NULL UNIQUE,
+    version INTEGER DEFAULT 0 NOT NULL,
     timezone VARCHAR(50),
     theme VARCHAR(50),
     language VARCHAR(50),

@@ -19,7 +19,7 @@ public class UpdateUserPreferenceSagaState
 
     @Override
     public String getId() {
-        return userPreferenceDto.getUserPreferenceId();
+        return initialData.userPreferenceId;
     }
 
     @Override
