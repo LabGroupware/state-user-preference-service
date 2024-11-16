@@ -1,0 +1,24 @@
+{
+  "name": "service-userpreference-connector",
+  "config": {
+    "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
+    "tasks.max": "1",
+    "database.hostname": "user-preference-postgres",
+    "database.port": "5432",
+    "database.user": "postgres",
+    "database.password": "postgres",
+    "database.dbname": "user_preference",
+    "database.server.name": "userpreference-service-db",
+    "table.include.list": "core.message",
+    "topic.prefix": "userpreference_service",
+    "plugin.name": "pgoutput",
+    "slot.name": "debezium_userpreference_service_slot",
+    "publication.name": "debezium_userpreference_service_publication",
+    "key.converter": "org.apache.kafka.connect.json.JsonConverter",
+    "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+    "key.converter.schemas.enable": "true",
+    "value.converter.schemas.enable": "true",
+    "transforms": "messaging",
+    "transforms.messaging.type": "org.cresplanex.core.cdc.debezium.TransactionalMessaging"
+  }
+}
