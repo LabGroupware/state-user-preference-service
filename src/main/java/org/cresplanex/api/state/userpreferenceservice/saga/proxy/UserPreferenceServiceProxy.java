@@ -1,8 +1,7 @@
 package org.cresplanex.api.state.userpreferenceservice.saga.proxy;
 
-import org.cresplanex.api.state.userpreferenceservice.saga.SagaCommandChannel;
-import org.cresplanex.api.state.userpreferenceservice.saga.command.userpreference.UndoUpdateUserPreferenceCommand;
-import org.cresplanex.api.state.userpreferenceservice.saga.command.userpreference.UpdateUserPreferenceCommand;
+import org.cresplanex.api.state.common.saga.SagaCommandChannel;
+import org.cresplanex.api.state.common.saga.command.userpreference.UpdateUserPreferenceCommand;
 import org.cresplanex.core.saga.simpledsl.CommandEndpoint;
 import org.cresplanex.core.saga.simpledsl.CommandEndpointBuilder;
 import org.springframework.stereotype.Component;
@@ -10,17 +9,17 @@ import org.springframework.stereotype.Component;
 @Component
 public class UserPreferenceServiceProxy {
 
-    public final CommandEndpoint<UpdateUserPreferenceCommand> updateUserPreference
+    public final CommandEndpoint<UpdateUserPreferenceCommand.Exec> updateUserPreference
             = CommandEndpointBuilder
-            .forCommand(UpdateUserPreferenceCommand.class)
+            .forCommand(UpdateUserPreferenceCommand.Exec.class)
             .withChannel(SagaCommandChannel.USER_PREFERENCE)
-            .withCommandType(UpdateUserPreferenceCommand.TYPE)
+            .withCommandType(UpdateUserPreferenceCommand.Exec.TYPE)
             .build();
 
-    public final CommandEndpoint<UndoUpdateUserPreferenceCommand> undoUpdateUserPreference
+    public final CommandEndpoint<UpdateUserPreferenceCommand.Undo> undoUpdateUserPreference
             = CommandEndpointBuilder
-            .forCommand(UndoUpdateUserPreferenceCommand.class)
+            .forCommand(UpdateUserPreferenceCommand.Undo.class)
             .withChannel(SagaCommandChannel.USER_PREFERENCE)
-            .withCommandType(UndoUpdateUserPreferenceCommand.TYPE)
+            .withCommandType(UpdateUserPreferenceCommand.Undo.TYPE)
             .build();
 }

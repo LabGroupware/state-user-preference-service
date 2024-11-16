@@ -1,9 +1,8 @@
 package org.cresplanex.api.state.userpreferenceservice.mapper.proto;
 
 import build.buf.gen.userpreference.v1.UserPreference;
+import org.cresplanex.api.state.common.utils.ValueFromNullable;
 import org.cresplanex.api.state.userpreferenceservice.entity.UserPreferenceEntity;
-
-import org.cresplanex.api.state.userpreferenceservice.utils.ValueFromNullable;
 
 public class ProtoMapper {
 

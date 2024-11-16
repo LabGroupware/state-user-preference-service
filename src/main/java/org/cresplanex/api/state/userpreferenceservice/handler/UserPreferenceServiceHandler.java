@@ -64,7 +64,7 @@ public class UserPreferenceServiceHandler extends UserPreferenceServiceGrpc.User
         if (request.getLanguage().getHasValue()) userPreference.setLanguage(request.getLanguage().getValue());
         if (request.getTheme().getHasValue()) userPreference.setTheme(request.getTheme().getValue());
         if (request.getTimezone().getHasValue()) userPreference.setTimezone(request.getTimezone().getValue());
-        String jobId = userPreferenceService.beginUpdate(userPreference);
+        String jobId = userPreferenceService.beginUpdate(request.getOperatorId(), userPreference);
 
         UpdateUserPreferenceResponse response = UpdateUserPreferenceResponse.newBuilder()
                 .setJobId(jobId)

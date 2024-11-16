@@ -1,23 +1,26 @@
 package org.cresplanex.api.state.userpreferenceservice.saga.model.userpreference;
 
+import org.cresplanex.api.state.common.event.model.userpreference.UserPreferenceDomainEvent;
+import org.cresplanex.api.state.common.event.model.userpreference.UserPreferenceUpdated;
+import org.cresplanex.api.state.common.event.publisher.AggregateDomainEventPublisher;
+import org.cresplanex.api.state.common.saga.SagaCommandChannel;
+import org.cresplanex.api.state.common.saga.data.userpreference.UpdateUserPreferenceResultData;
+import org.cresplanex.api.state.common.saga.model.SagaModel;
+import org.cresplanex.api.state.common.saga.reply.userpreference.UpdateUserPreferenceReply;
+import org.cresplanex.api.state.common.saga.type.UserPreferenceSagaType;
 import org.cresplanex.api.state.userpreferenceservice.entity.UserPreferenceEntity;
-import org.cresplanex.api.state.userpreferenceservice.event.model.userpreference.*;
-import org.cresplanex.api.state.userpreferenceservice.event.publisher.AggregateDomainEventPublisher;
 import org.cresplanex.api.state.userpreferenceservice.event.publisher.UserPreferenceDomainEventPublisher;
-import org.cresplanex.api.state.userpreferenceservice.saga.SagaCommandChannel;
-import org.cresplanex.api.state.userpreferenceservice.saga.data.userpreference.UpdateUserPreferenceResultData;
-import org.cresplanex.api.state.userpreferenceservice.saga.model.SagaModel;
 import org.cresplanex.api.state.userpreferenceservice.saga.proxy.UserPreferenceServiceProxy;
-import org.cresplanex.api.state.userpreferenceservice.saga.reply.userpreference.FailureUpdateUserPreferenceReply;
-import org.cresplanex.api.state.userpreferenceservice.saga.reply.userpreference.UpdateUserPreferenceReply;
 import org.cresplanex.api.state.userpreferenceservice.saga.state.userpreference.UpdateUserPreferenceSagaState;
 import org.cresplanex.core.saga.orchestration.SagaDefinition;
 import org.springframework.stereotype.Component;
 
 @Component
 public class UpdateUserPreferenceSaga extends SagaModel<
-        UserPreferenceEntity, UserPreferenceDomainEvent, UpdateUserPreferenceSaga.Action, UpdateUserPreferenceSagaState> {
-    public static final String TYPE = "org.cresplanex.nova.service.userprofile.saga.UpdateUserPreferenceSaga";
+        UserPreferenceEntity,
+        UserPreferenceDomainEvent,
+        UpdateUserPreferenceSaga.Action,
+        UpdateUserPreferenceSagaState> {
 
     private final SagaDefinition<UpdateUserPreferenceSagaState> sagaDefinition;
     private final UserPreferenceDomainEventPublisher domainEventPublisher;
@@ -32,13 +35,13 @@ public class UpdateUserPreferenceSaga extends SagaModel<
                         UpdateUserPreferenceSagaState::makeUpdateUserPreferenceCommand
                 )
                 .onReply(
-                        UpdateUserPreferenceReply.class,
-                        UpdateUserPreferenceReply.TYPE,
+                        UpdateUserPreferenceReply.Success.class,
+                        UpdateUserPreferenceReply.Success.TYPE,
                         this::handleUpdateUserPreferenceReply
                 )
                 .onReply(
-                        FailureUpdateUserPreferenceReply.class,
-                        FailureUpdateUserPreferenceReply.TYPE,
+                        UpdateUserPreferenceReply.Failure.class,
+                        UpdateUserPreferenceReply.Failure.TYPE,
                         this::handleFailureReply
                 )
                 .withCompensation(
@@ -50,7 +53,8 @@ public class UpdateUserPreferenceSaga extends SagaModel<
     }
 
     @Override
-    protected AggregateDomainEventPublisher<UserPreferenceEntity, UserPreferenceDomainEvent> getDomainEventPublisher() {
+    protected AggregateDomainEventPublisher<UserPreferenceEntity, UserPreferenceDomainEvent>
+    getDomainEventPublisher() {
         return domainEventPublisher;
     }
 
@@ -61,29 +65,30 @@ public class UpdateUserPreferenceSaga extends SagaModel<
 
     @Override
     protected String getBeginEventType() {
-        return BeginJobEventUpdateUserPreference.TYPE;
+        return UserPreferenceUpdated.BeginJobDomainEvent.TYPE;
     }
 
     @Override
     protected String getProcessedEventType() {
-        return ProcessedJobEventUpdateUserPreference.TYPE;
+        return UserPreferenceUpdated.ProcessedJobDomainEvent.TYPE;
     }
 
     @Override
     protected String getFailedEventType() {
-        return FailedJobEventUpdateUserPreference.TYPE;
+        return UserPreferenceUpdated.FailedJobDomainEvent.TYPE;
     }
 
     @Override
     protected String getSuccessfullyEventType() {
-        return SuccessfullyUpdateUserPreferenceEvent.TYPE;
+        return UserPreferenceUpdated.SuccessJobDomainEvent.TYPE;
     }
 
-    private void handleUpdateUserPreferenceReply(UpdateUserPreferenceSagaState state, UpdateUserPreferenceReply reply) {
-        UpdateUserPreferenceReply.Data data = reply.getData();
+    private void handleUpdateUserPreferenceReply(
+            UpdateUserPreferenceSagaState state, UpdateUserPreferenceReply.Success reply) {
+        UpdateUserPreferenceReply.Success.Data data = reply.getData();
         state.setUserPreferenceDto(data.getUserPreference());
         state.setPrevUserPreferenceDto(data.getPrevUserPreference());
-        processedEventPublish(state, reply);
+        this.processedEventPublish(state, reply);
     }
 
     @Override
@@ -103,7 +108,7 @@ public class UpdateUserPreferenceSaga extends SagaModel<
 
     @Override
     public String getSagaType() {
-        return UpdateUserPreferenceSaga.TYPE;
+        return UserPreferenceSagaType.UPDATE_USER_PREFERENCE;
     }
 
     @Override

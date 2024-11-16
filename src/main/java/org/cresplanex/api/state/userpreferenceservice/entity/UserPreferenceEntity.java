@@ -1,7 +1,6 @@
 package org.cresplanex.api.state.userpreferenceservice.entity;
 
-import org.cresplanex.api.state.userpreferenceservice.utils.OriginalAutoGenerate;
-
+import org.cresplanex.api.state.common.entity.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -12,6 +11,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.cresplanex.api.state.common.utils.OriginalAutoGenerate;
 
 @Entity
 @Getter

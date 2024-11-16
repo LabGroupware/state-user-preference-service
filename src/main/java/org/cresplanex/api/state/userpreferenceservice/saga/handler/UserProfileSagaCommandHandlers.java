@@ -1,15 +1,13 @@
 package org.cresplanex.api.state.userpreferenceservice.saga.handler;
 
 import lombok.RequiredArgsConstructor;
-import org.cresplanex.api.state.userpreferenceservice.constants.ServerErrorCode;
+import org.cresplanex.api.state.common.constants.UserPreferenceServiceApplicationCode;
+import org.cresplanex.api.state.common.saga.LockTargetType;
+import org.cresplanex.api.state.common.saga.SagaCommandChannel;
+import org.cresplanex.api.state.common.saga.command.userpreference.CreateUserPreferenceCommand;
+import org.cresplanex.api.state.common.saga.reply.userpreference.CreateUserPreferenceReply;
 import org.cresplanex.api.state.userpreferenceservice.entity.UserPreferenceEntity;
 import org.cresplanex.api.state.userpreferenceservice.mapper.dto.DtoMapper;
-import org.cresplanex.api.state.userpreferenceservice.saga.LockTargetType;
-import org.cresplanex.api.state.userpreferenceservice.saga.SagaCommandChannel;
-import org.cresplanex.api.state.userpreferenceservice.saga.command.userpreference.CreateUserPreferenceCommand;
-import org.cresplanex.api.state.userpreferenceservice.saga.command.userpreference.UndoCreateUserPreferenceCommand;
-import org.cresplanex.api.state.userpreferenceservice.saga.reply.userpreference.CreateUserPreferenceReply;
-import org.cresplanex.api.state.userpreferenceservice.saga.reply.userpreference.FailureCreateUserPreferenceReply;
 import org.cresplanex.api.state.userpreferenceservice.service.UserPreferenceService;
 import org.cresplanex.core.commands.consumer.CommandHandlers;
 import org.cresplanex.core.commands.consumer.CommandMessage;
@@ -35,12 +33,12 @@ public class UserProfileSagaCommandHandlers {
     public CommandHandlers commandHandlers() {
         return SagaCommandHandlersBuilder
                 .fromChannel(SagaCommandChannel.USER_PROFILE)
-                .onMessage(CreateUserPreferenceCommand.class,
-                        CreateUserPreferenceCommand.TYPE,
+                .onMessage(CreateUserPreferenceCommand.Exec.class,
+                        CreateUserPreferenceCommand.Exec.TYPE,
                         this::handleCreateUserPreferenceCommand
                 )
-                .onMessage(UndoCreateUserPreferenceCommand.class,
-                        UndoCreateUserPreferenceCommand.TYPE,
+                .onMessage(CreateUserPreferenceCommand.Undo.class,
+                        CreateUserPreferenceCommand.Undo.TYPE,
                         this::handleUndoCreateUserPreferenceCommand
                 )
                 .withPreLock(this::undoCreateUserPreferencePreLock)
@@ -48,38 +46,38 @@ public class UserProfileSagaCommandHandlers {
     }
 
     private LockTarget undoCreateUserPreferencePreLock(
-            CommandMessage<UndoCreateUserPreferenceCommand> cmd, PathVariables pvs) {
+            CommandMessage<CreateUserPreferenceCommand.Undo> cmd, PathVariables pvs) {
         return new LockTarget(LockTargetType.USER_PREFERENCE, cmd.getCommand().getUserPreferenceId());
     }
 
-    private Message handleCreateUserPreferenceCommand(CommandMessage<CreateUserPreferenceCommand> cmd) {
+    private Message handleCreateUserPreferenceCommand(CommandMessage<CreateUserPreferenceCommand.Exec> cmd) {
         try {
-            CreateUserPreferenceCommand command = cmd.getCommand();
+            CreateUserPreferenceCommand.Exec command = cmd.getCommand();
             UserPreferenceEntity userPreference = new UserPreferenceEntity();
             userPreference.setUserId(command.getUserId());
             userPreference = userPreferenceService.create(userPreference);
-            CreateUserPreferenceReply reply = new CreateUserPreferenceReply(
-                    new CreateUserPreferenceReply.Data(DtoMapper.convert(userPreference)),
-                    ServerErrorCode.USER_PREFERENCE_SUCCESS,
+            CreateUserPreferenceReply.Success reply = new CreateUserPreferenceReply.Success(
+                    new CreateUserPreferenceReply.Success.Data(DtoMapper.convert(userPreference)),
+                    UserPreferenceServiceApplicationCode.SUCCESS,
                     "User preference created successfully",
                     LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
             );
             return withLock(LockTargetType.USER_PREFERENCE, userPreference.getUserPreferenceId())
-                    .withSuccess(reply, CreateUserPreferenceReply.TYPE);
+                    .withSuccess(reply, CreateUserPreferenceReply.Success.TYPE);
         } catch (Exception e) {
-            FailureCreateUserPreferenceReply reply = new FailureCreateUserPreferenceReply(
+            CreateUserPreferenceReply.Failure reply = new CreateUserPreferenceReply.Failure(
                     null,
-                    ServerErrorCode.USER_PREFERENCE_INTERNAL_ERROR,
+                    UserPreferenceServiceApplicationCode.INTERNAL_SERVER_ERROR,
                     "Failed to create user preference",
                     LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
             );
-            return withFailure(reply, FailureCreateUserPreferenceReply.TYPE);
+            return withFailure(reply, CreateUserPreferenceReply.Failure.TYPE);
         }
     }
 
-    private Message handleUndoCreateUserPreferenceCommand(CommandMessage<UndoCreateUserPreferenceCommand> cmd) {
+    private Message handleUndoCreateUserPreferenceCommand(CommandMessage<CreateUserPreferenceCommand.Undo> cmd) {
         try {
-            UndoCreateUserPreferenceCommand command = cmd.getCommand();
+            CreateUserPreferenceCommand.Undo command = cmd.getCommand();
             String userPreferenceId = command.getUserPreferenceId();
             userPreferenceService.undoCreate(userPreferenceId);
             return withSuccess();

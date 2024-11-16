@@ -1,6 +1,6 @@
 package org.cresplanex.api.state.userpreferenceservice.config;
 
-import org.cresplanex.api.state.userpreferenceserviceservice.audit.AuditAware;
+import org.cresplanex.api.state.userpreferenceservice.audit.AuditAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.AuditorAware;

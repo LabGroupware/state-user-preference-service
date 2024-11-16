@@ -1,6 +1,6 @@
 package org.cresplanex.api.state.userpreferenceservice.mapper.dto;
 
-import org.cresplanex.api.state.userpreferenceservice.dto.userpreference.UserPreferenceDto;
+import org.cresplanex.api.state.common.dto.userpreference.UserPreferenceDto;
 import org.cresplanex.api.state.userpreferenceservice.entity.UserPreferenceEntity;
 
 public class DtoMapper {

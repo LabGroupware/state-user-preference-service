@@ -1,4 +1,4 @@
-package org.cresplanex.api.state.userpreferenceserviceservice.audit;
+package org.cresplanex.api.state.userpreferenceservice.audit;
 
 import java.util.Optional;
 

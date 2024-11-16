@@ -1,20 +1,21 @@
 package org.cresplanex.api.state.userpreferenceservice.saga.state.userpreference;
 
 import lombok.*;
-import org.cresplanex.api.state.userpreferenceservice.dto.userpreference.UserPreferenceDto;
+import org.cresplanex.api.state.common.dto.userpreference.UserPreferenceDto;
+import org.cresplanex.api.state.common.saga.command.userpreference.UpdateUserPreferenceCommand;
+import org.cresplanex.api.state.common.saga.state.SagaState;
 import org.cresplanex.api.state.userpreferenceservice.entity.UserPreferenceEntity;
-import org.cresplanex.api.state.userpreferenceservice.saga.command.userpreference.UndoUpdateUserPreferenceCommand;
-import org.cresplanex.api.state.userpreferenceservice.saga.command.userpreference.UpdateUserPreferenceCommand;
 import org.cresplanex.api.state.userpreferenceservice.saga.model.userpreference.UpdateUserPreferenceSaga;
-import org.cresplanex.api.state.userpreferenceservice.saga.state.SagaState;
 
 @Getter
 @Setter
 @NoArgsConstructor
-public class UpdateUserPreferenceSagaState extends SagaState<UpdateUserPreferenceSaga.Action, UserPreferenceEntity> {
+public class UpdateUserPreferenceSagaState
+        extends SagaState<UpdateUserPreferenceSaga.Action, UserPreferenceEntity> {
     private InitialData initialData;
     private UserPreferenceDto userPreferenceDto;
     private UserPreferenceDto prevUserPreferenceDto;
+    private String operatorId;
 
     @Override
     public String getId() {
@@ -37,8 +38,9 @@ public class UpdateUserPreferenceSagaState extends SagaState<UpdateUserPreferenc
         private String timezone;
     }
 
-    public UpdateUserPreferenceCommand makeUpdateUserPreferenceCommand() {
-        return new UpdateUserPreferenceCommand(
+    public UpdateUserPreferenceCommand.Exec makeUpdateUserPreferenceCommand() {
+        return new UpdateUserPreferenceCommand.Exec(
+                this.operatorId,
                 initialData.getUserPreferenceId(),
                 initialData.getTheme(),
                 initialData.getLanguage(),
@@ -46,8 +48,8 @@ public class UpdateUserPreferenceSagaState extends SagaState<UpdateUserPreferenc
         );
     }
 
-    public UndoUpdateUserPreferenceCommand makeUndoUpdateUserPreferenceCommand() {
-        return new UndoUpdateUserPreferenceCommand(
+    public UpdateUserPreferenceCommand.Undo makeUndoUpdateUserPreferenceCommand() {
+        return new UpdateUserPreferenceCommand.Undo(
                 userPreferenceDto.getUserPreferenceId(),
                 prevUserPreferenceDto.getTheme(),
                 prevUserPreferenceDto.getLanguage(),

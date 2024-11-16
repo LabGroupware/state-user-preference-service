@@ -1,16 +1,14 @@
 package org.cresplanex.api.state.userpreferenceservice.saga.handler;
 
 import lombok.RequiredArgsConstructor;
-import org.cresplanex.api.state.userpreferenceservice.constants.ServerErrorCode;
-import org.cresplanex.api.state.userpreferenceservice.entity.EntityWithPrevious;
+import org.cresplanex.api.state.common.constants.UserPreferenceServiceApplicationCode;
+import org.cresplanex.api.state.common.entity.EntityWithPrevious;
+import org.cresplanex.api.state.common.saga.LockTargetType;
+import org.cresplanex.api.state.common.saga.SagaCommandChannel;
+import org.cresplanex.api.state.common.saga.command.userpreference.UpdateUserPreferenceCommand;
+import org.cresplanex.api.state.common.saga.reply.userpreference.UpdateUserPreferenceReply;
 import org.cresplanex.api.state.userpreferenceservice.entity.UserPreferenceEntity;
 import org.cresplanex.api.state.userpreferenceservice.mapper.dto.DtoMapper;
-import org.cresplanex.api.state.userpreferenceservice.saga.LockTargetType;
-import org.cresplanex.api.state.userpreferenceservice.saga.SagaCommandChannel;
-import org.cresplanex.api.state.userpreferenceservice.saga.command.userpreference.UndoUpdateUserPreferenceCommand;
-import org.cresplanex.api.state.userpreferenceservice.saga.command.userpreference.UpdateUserPreferenceCommand;
-import org.cresplanex.api.state.userpreferenceservice.saga.reply.userpreference.FailureUpdateUserPreferenceReply;
-import org.cresplanex.api.state.userpreferenceservice.saga.reply.userpreference.UpdateUserPreferenceReply;
 import org.cresplanex.api.state.userpreferenceservice.service.UserPreferenceService;
 import org.cresplanex.core.commands.consumer.CommandHandlers;
 import org.cresplanex.core.commands.consumer.CommandMessage;
@@ -25,7 +23,6 @@ import java.time.format.DateTimeFormatter;
 
 import static org.cresplanex.core.commands.consumer.CommandHandlerReplyBuilder.withFailure;
 import static org.cresplanex.core.commands.consumer.CommandHandlerReplyBuilder.withSuccess;
-import static org.cresplanex.core.saga.participant.SagaReplyMessageBuilder.withLock;
 
 @Component
 @RequiredArgsConstructor
@@ -36,13 +33,13 @@ public class UserPreferenceSagaCommandHandlers {
     public CommandHandlers commandHandlers() {
         return SagaCommandHandlersBuilder
                 .fromChannel(SagaCommandChannel.USER_PREFERENCE)
-                .onMessage(UpdateUserPreferenceCommand.class,
-                        UpdateUserPreferenceCommand.TYPE,
+                .onMessage(UpdateUserPreferenceCommand.Exec.class,
+                        UpdateUserPreferenceCommand.Exec.TYPE,
                         this::handleUpdateUserPreferenceCommand
                 )
                 .withPreLock(this::updateUserPreferencePreLock)
-                .onMessage(UndoUpdateUserPreferenceCommand.class,
-                        UndoUpdateUserPreferenceCommand.TYPE,
+                .onMessage(UpdateUserPreferenceCommand.Undo.class,
+                        UpdateUserPreferenceCommand.Undo.TYPE,
                         this::handleUndoUpdateUserPreferenceCommand
                 )
                 .withPreLock(this::undoUpdateUserPreferencePreLock)
@@ -50,52 +47,52 @@ public class UserPreferenceSagaCommandHandlers {
     }
 
     private LockTarget updateUserPreferencePreLock(
-            CommandMessage<UpdateUserPreferenceCommand> cmd,
+            CommandMessage<UpdateUserPreferenceCommand.Exec> cmd,
             PathVariables pathVariables
     ) {
         return new LockTarget(LockTargetType.USER_PREFERENCE, cmd.getCommand().getUserPreferenceId());
     }
 
     private LockTarget undoUpdateUserPreferencePreLock(
-            CommandMessage<UndoUpdateUserPreferenceCommand> cmd,
+            CommandMessage<UpdateUserPreferenceCommand.Undo> cmd,
             PathVariables pathVariables
     ) {
         return new LockTarget(LockTargetType.USER_PREFERENCE, cmd.getCommand().getUserPreferenceId());
     }
 
-    private Message handleUpdateUserPreferenceCommand(CommandMessage<UpdateUserPreferenceCommand> cmd) {
+    private Message handleUpdateUserPreferenceCommand(CommandMessage<UpdateUserPreferenceCommand.Exec> cmd) {
         try {
-            UpdateUserPreferenceCommand command = cmd.getCommand();
+            UpdateUserPreferenceCommand.Exec command = cmd.getCommand();
             UserPreferenceEntity userPreference = new UserPreferenceEntity();
             userPreference.setLanguage(command.getLanguage());
             userPreference.setTheme(command.getTheme());
             userPreference.setTimezone(command.getTimezone());
             EntityWithPrevious<UserPreferenceEntity> entityWithPrev =
                     userPreferenceService.update(command.getUserPreferenceId(), userPreference);
-            UpdateUserPreferenceReply reply = new UpdateUserPreferenceReply(
-                    new UpdateUserPreferenceReply.Data(
+            UpdateUserPreferenceReply.Success reply = new UpdateUserPreferenceReply.Success(
+                    new UpdateUserPreferenceReply.Success.Data(
                             DtoMapper.convert(entityWithPrev.getCurrent()),
                             DtoMapper.convert(entityWithPrev.getPrevious())
                     ),
-                    ServerErrorCode.USER_PREFERENCE_SUCCESS,
+                    UserPreferenceServiceApplicationCode.SUCCESS,
                     "User preference updated successfully",
                     LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
             );
-            return withSuccess(reply, UpdateUserPreferenceReply.TYPE);
+            return withSuccess(reply, UpdateUserPreferenceReply.Success.TYPE);
         } catch (Exception e) {
-            FailureUpdateUserPreferenceReply reply = new FailureUpdateUserPreferenceReply(
+            UpdateUserPreferenceReply.Failure reply = new UpdateUserPreferenceReply.Failure(
                     null,
-                    ServerErrorCode.USER_PREFERENCE_INTERNAL_ERROR,
+                    UserPreferenceServiceApplicationCode.INTERNAL_SERVER_ERROR,
                     "Failed to create user preference",
                     LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
             );
-            return withFailure(reply, FailureUpdateUserPreferenceReply.TYPE);
+            return withFailure(reply, UpdateUserPreferenceReply.Failure.TYPE);
         }
     }
 
-    private Message handleUndoUpdateUserPreferenceCommand(CommandMessage<UndoUpdateUserPreferenceCommand> cmd) {
+    private Message handleUndoUpdateUserPreferenceCommand(CommandMessage<UpdateUserPreferenceCommand.Undo> cmd) {
         try {
-            UndoUpdateUserPreferenceCommand command = cmd.getCommand();
+            UpdateUserPreferenceCommand.Undo command = cmd.getCommand();
             String userPreferenceId = command.getUserPreferenceId();
             UserPreferenceEntity userPreference = new UserPreferenceEntity();
             userPreference.setLanguage(command.getOriginLanguage());
