@@ -5,6 +5,7 @@ import build.buf.gen.job.v1.JobServiceGrpc;
 import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.cresplanex.api.state.common.entity.EntityWithPrevious;
+import org.cresplanex.api.state.common.service.BaseService;
 import org.cresplanex.api.state.userpreferenceservice.entity.UserPreferenceEntity;
 import org.cresplanex.api.state.userpreferenceservice.exception.UserPreferenceNotFoundException;
 import org.cresplanex.api.state.userpreferenceservice.repository.UserPreferenceRepository;
@@ -22,13 +23,10 @@ import java.util.List;
 @RequiredArgsConstructor
 @Service
 @Transactional
-public class UserPreferenceService {
+public class UserPreferenceService extends BaseService {
 
     private final UserPreferenceRepository userPreferenceRepository;
     private final SagaInstanceFactory sagaInstanceFactory;
-
-    @GrpcClient("jobService")
-    private JobServiceGrpc.JobServiceBlockingStub jobServiceBlockingStub;
 
     private final UpdateUserPreferenceSaga updateUserPreferenceSaga;
 
@@ -80,9 +78,7 @@ public class UserPreferenceService {
         state.setInitialData(initialData);
         state.setOperatorId(operatorId);
 
-        String jobId = jobServiceBlockingStub.createJob(
-                CreateJobRequest.newBuilder().build()
-        ).getJobId();
+        String jobId = getJobId();
         state.setJobId(jobId);
 
         sagaInstanceFactory.create(updateUserPreferenceSaga, state);
