@@ -25,7 +25,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 import static org.cresplanex.core.commands.consumer.CommandHandlerReplyBuilder.withException;
-import static org.cresplanex.core.commands.consumer.CommandHandlerReplyBuilder.withFailure;
 import static org.cresplanex.core.commands.consumer.CommandHandlerReplyBuilder.withSuccess;
 import static org.cresplanex.core.saga.participant.SagaReplyMessageBuilder.withLock;
 
@@ -100,7 +99,7 @@ public class UserPreferenceSagaCommandHandlers {
             userPreferenceService.undoCreate(userPreferenceId);
             return withSuccess();
         } catch (Exception e) {
-            return withFailure();
+            return withException();
         }
     }
 
@@ -144,7 +143,7 @@ public class UserPreferenceSagaCommandHandlers {
                     "Failed to create user preference",
                     LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
             );
-            return withFailure(reply, UpdateUserPreferenceReply.Failure.TYPE);
+            return withException(reply, UpdateUserPreferenceReply.Failure.TYPE);
         }
     }
 
@@ -159,7 +158,7 @@ public class UserPreferenceSagaCommandHandlers {
             userPreferenceService.undoUpdate(userPreferenceId, userPreference);
             return withSuccess();
         } catch (Exception e) {
-            return withFailure();
+            return withException();
         }
     }
 }
