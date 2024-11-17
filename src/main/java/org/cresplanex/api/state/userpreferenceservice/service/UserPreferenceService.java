@@ -26,36 +26,38 @@ public class UserPreferenceService extends BaseService {
 
     private final UpdateUserPreferenceSaga updateUserPreferenceSaga;
 
+    @Transactional(readOnly = true)
     public UserPreferenceEntity findById(String userPreferenceId) {
-        return userPreferenceRepository.findById(userPreferenceId).orElseThrow(() -> {
-            return new UserPreferenceNotFoundException(
-                    UserPreferenceNotFoundException.FindType.BY_ID,
-                    userPreferenceId
-            );
-        });
+        return internalFindById(userPreferenceId);
     }
 
+    private UserPreferenceEntity internalFindById(String userPreferenceId) {
+        return userPreferenceRepository.findById(userPreferenceId).orElseThrow(() -> new UserPreferenceNotFoundException(
+                UserPreferenceNotFoundException.FindType.BY_ID,
+                userPreferenceId
+        ));
+    }
+
+    @Transactional(readOnly = true)
     public UserPreferenceEntity findByUserId(String userId) {
-        return userPreferenceRepository.findByUserId(userId).orElseThrow(() -> {
-            return new UserPreferenceNotFoundException(
-                    UserPreferenceNotFoundException.FindType.BY_USER_ID,
-                    userId
-            );
-        });
+        return userPreferenceRepository.findByUserId(userId).orElseThrow(() -> new UserPreferenceNotFoundException(
+                UserPreferenceNotFoundException.FindType.BY_USER_ID,
+                userId
+        ));
     }
 
+    @Transactional(readOnly = true)
     public List<UserPreferenceEntity> get() {
         return userPreferenceRepository.findAll();
     }
 
     public UserPreferenceEntity create(UserPreferenceEntity preference) {
         preference = userPreferenceRepository.save(preference);
-//        throw new UnsupportedOperationException("Not implemented");
         return preference;
     }
 
     public void undoCreate(String userPreferenceId) {
-        UserPreferenceEntity preference = findById(userPreferenceId);
+        UserPreferenceEntity preference = internalFindById(userPreferenceId);
         userPreferenceRepository.delete(preference);
     }
 
@@ -80,7 +82,7 @@ public class UserPreferenceService extends BaseService {
     }
 
     public EntityWithPrevious<UserPreferenceEntity> update(String userPreferenceId, UserPreferenceEntity preference) {
-        UserPreferenceEntity existingPreference = findById(userPreferenceId);
+        UserPreferenceEntity existingPreference = internalFindById(userPreferenceId);
         UserPreferenceEntity updatedPreference = existingPreference.clone();
         updatedPreference.setLanguage(preference.getLanguage());
         updatedPreference.setTheme(preference.getTheme());
@@ -89,7 +91,7 @@ public class UserPreferenceService extends BaseService {
     }
 
     public void undoUpdate(String userPreferenceId, UserPreferenceEntity preference) {
-        UserPreferenceEntity existingPreference = findById(userPreferenceId);
+        UserPreferenceEntity existingPreference = internalFindById(userPreferenceId);
         existingPreference.setLanguage(preference.getLanguage());
         existingPreference.setTheme(preference.getTheme());
         existingPreference.setTimezone(preference.getTimezone());
