@@ -13,8 +13,8 @@ import org.cresplanex.api.state.userpreferenceservice.saga.model.userpreference.
 public class UpdateUserPreferenceSagaState
         extends SagaState<UpdateUserPreferenceSaga.Action, UserPreferenceEntity> {
     private InitialData initialData;
-    private UserPreferenceDto userPreferenceDto;
-    private UserPreferenceDto prevUserPreferenceDto;
+    private UserPreferenceDto userPreferenceDto = UserPreferenceDto.empty();
+    private UserPreferenceDto prevUserPreferenceDto = UserPreferenceDto.empty();
     private String operatorId;
 
     @Override

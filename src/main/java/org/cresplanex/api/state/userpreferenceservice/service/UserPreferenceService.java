@@ -12,6 +12,7 @@ import org.cresplanex.core.saga.orchestration.SagaInstanceFactory;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -49,8 +50,8 @@ public class UserPreferenceService extends BaseService {
 
     public UserPreferenceEntity create(UserPreferenceEntity preference) {
         preference = userPreferenceRepository.save(preference);
-        throw new UnsupportedOperationException("Not implemented");
-//        return preference;
+//        throw new UnsupportedOperationException("Not implemented");
+        return preference;
     }
 
     public void undoCreate(String userPreferenceId) {
@@ -64,6 +65,7 @@ public class UserPreferenceService extends BaseService {
         userPreferenceRepository.delete(preference);
     }
 
+    @Transactional
     public String beginUpdate(String operatorId, UserPreferenceEntity preference) {
         UpdateUserPreferenceSagaState.InitialData initialData = UpdateUserPreferenceSagaState.InitialData.builder()
                 .userPreferenceId(preference.getUserPreferenceId())

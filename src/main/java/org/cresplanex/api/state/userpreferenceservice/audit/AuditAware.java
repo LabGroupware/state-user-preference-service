@@ -13,6 +13,6 @@ public class AuditAware implements AuditorAware<String> {
      */
     @Override
     public Optional<String> getCurrentAuditor() {
-        return Optional.of("USER_PROFILE_MS");
+        return Optional.of("USER_PREFERENCE_MS");
     }
 }
