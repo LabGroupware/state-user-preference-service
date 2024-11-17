@@ -20,7 +20,7 @@ import org.cresplanex.api.state.common.utils.OriginalAutoGenerate;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "user_preferences")
-public class UserPreferenceEntity extends BaseEntity implements Cloneable {
+public class UserPreferenceEntity extends BaseEntity<UserPreferenceEntity> {
 
     @Override
     public void setId(String id) {
@@ -40,10 +40,6 @@ public class UserPreferenceEntity extends BaseEntity implements Cloneable {
     @Column(name = "user_id", length = 100, nullable = false, unique = true)
     private String userId;
 
-    @Version
-    @Column(name = "version", nullable = false)
-    private Integer version;
-
     @Column(name = "timezone", length = 50)
     private String timezone;
 
@@ -55,13 +51,4 @@ public class UserPreferenceEntity extends BaseEntity implements Cloneable {
 
     @Column(name = "notification_setting_id", length = 100)
     private String notificationSettingId;
-
-    @Override
-    public UserPreferenceEntity clone() {
-        try {
-            return (UserPreferenceEntity) super.clone();
-        } catch (CloneNotSupportedException e) {
-            return null;
-        }
-    }
 }

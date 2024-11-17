@@ -56,12 +56,6 @@ public class UserPreferenceService extends BaseService {
 
     public void undoCreate(String userPreferenceId) {
         UserPreferenceEntity preference = findById(userPreferenceId);
-        if (preference == null) {
-            throw new UserPreferenceNotFoundException(
-                    UserPreferenceNotFoundException.FindType.BY_ID,
-                    userPreferenceId
-            );
-        }
         userPreferenceRepository.delete(preference);
     }
 
@@ -87,12 +81,6 @@ public class UserPreferenceService extends BaseService {
 
     public EntityWithPrevious<UserPreferenceEntity> update(String userPreferenceId, UserPreferenceEntity preference) {
         UserPreferenceEntity existingPreference = findById(userPreferenceId);
-        if (existingPreference == null) {
-            throw new UserPreferenceNotFoundException(
-                    UserPreferenceNotFoundException.FindType.BY_ID,
-                    userPreferenceId
-            );
-        }
         UserPreferenceEntity updatedPreference = existingPreference.clone();
         updatedPreference.setLanguage(preference.getLanguage());
         updatedPreference.setTheme(preference.getTheme());
@@ -102,12 +90,6 @@ public class UserPreferenceService extends BaseService {
 
     public void undoUpdate(String userPreferenceId, UserPreferenceEntity preference) {
         UserPreferenceEntity existingPreference = findById(userPreferenceId);
-        if (existingPreference == null) {
-            throw new UserPreferenceNotFoundException(
-                    UserPreferenceNotFoundException.FindType.BY_ID,
-                    userPreferenceId
-            );
-        }
         existingPreference.setLanguage(preference.getLanguage());
         existingPreference.setTheme(preference.getTheme());
         existingPreference.setTimezone(preference.getTimezone());
