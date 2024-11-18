@@ -82,15 +82,6 @@ public class UserPreferenceService extends BaseService {
         return jobId;
     }
 
-    public void validateUserPreferences(List<String> userPreferenceIds) throws NotFoundUserPreferenceException {
-        userPreferenceRepository.countByUserPreferenceIdIn(userPreferenceIds)
-                .ifPresent(count -> {
-                    if (count != userPreferenceIds.size()) {
-                        throw new NotFoundUserPreferenceException(userPreferenceIds);
-                    }
-                });
-    }
-
     public EntityWithPrevious<UserPreferenceEntity> update(String operatorId, String userPreferenceId, UserPreferenceEntity preference) {
         UserPreferenceEntity existingPreference = internalFindById(userPreferenceId);
         UserPreferenceEntity updatedPreference = existingPreference.clone();
