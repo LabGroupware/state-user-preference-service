@@ -91,7 +91,7 @@ public class UserPreferenceService extends BaseService {
                 });
     }
 
-    public EntityWithPrevious<UserPreferenceEntity> update(String userPreferenceId, UserPreferenceEntity preference) {
+    public EntityWithPrevious<UserPreferenceEntity> update(String operatorId, String userPreferenceId, UserPreferenceEntity preference) {
         UserPreferenceEntity existingPreference = internalFindById(userPreferenceId);
         UserPreferenceEntity updatedPreference = existingPreference.clone();
         updatedPreference.setLanguage(preference.getLanguage());

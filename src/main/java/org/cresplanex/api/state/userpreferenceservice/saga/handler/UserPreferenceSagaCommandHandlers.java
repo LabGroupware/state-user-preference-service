@@ -125,7 +125,7 @@ public class UserPreferenceSagaCommandHandlers {
             userPreference.setTheme(command.getTheme());
             userPreference.setTimezone(command.getTimezone());
             EntityWithPrevious<UserPreferenceEntity> entityWithPrev =
-                    userPreferenceService.update(command.getUserPreferenceId(), userPreference);
+                    userPreferenceService.update(command.getOperatorId(), command.getUserPreferenceId(), userPreference);
             UpdateUserPreferenceReply.Success reply = new UpdateUserPreferenceReply.Success(
                     new UpdateUserPreferenceReply.Success.Data(
                             DtoMapper.convert(entityWithPrev.getCurrent()),

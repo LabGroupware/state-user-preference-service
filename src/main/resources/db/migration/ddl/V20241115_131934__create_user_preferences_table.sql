@@ -6,9 +6,9 @@ CREATE TABLE user_preferences (
     theme VARCHAR(50),
     language VARCHAR(50),
     notification_setting_id VARCHAR(100),
-    created_at date NOT NULL,
+    created_at TIMESTAMP NOT NULL,
     created_by varchar(50) NOT NULL,
-    updated_at date DEFAULT NULL,
+    updated_at TIMESTAMP DEFAULT NULL,
     updated_by varchar(50) DEFAULT NULL
 );
 
