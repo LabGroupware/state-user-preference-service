@@ -1,10 +1,12 @@
 package org.cresplanex.api.state.userpreferenceservice.saga.model.userpreference;
 
+import org.cresplanex.api.state.common.constants.UserPreferenceServiceApplicationCode;
 import org.cresplanex.api.state.common.event.model.userpreference.UserPreferenceDomainEvent;
 import org.cresplanex.api.state.common.event.model.userpreference.UserPreferenceUpdated;
 import org.cresplanex.api.state.common.event.publisher.AggregateDomainEventPublisher;
 import org.cresplanex.api.state.common.saga.SagaCommandChannel;
 import org.cresplanex.api.state.common.saga.data.userpreference.UpdateUserPreferenceResultData;
+import org.cresplanex.api.state.common.saga.local.userpreference.NotFoundUserPreferenceException;
 import org.cresplanex.api.state.common.saga.model.SagaModel;
 import org.cresplanex.api.state.common.saga.reply.userpreference.UpdateUserPreferenceReply;
 import org.cresplanex.api.state.common.saga.type.UserPreferenceSagaType;
@@ -12,8 +14,11 @@ import org.cresplanex.api.state.userpreferenceservice.entity.UserPreferenceEntit
 import org.cresplanex.api.state.userpreferenceservice.event.publisher.UserPreferenceDomainEventPublisher;
 import org.cresplanex.api.state.userpreferenceservice.saga.proxy.UserPreferenceServiceProxy;
 import org.cresplanex.api.state.userpreferenceservice.saga.state.userpreference.UpdateUserPreferenceSagaState;
+import org.cresplanex.api.state.userpreferenceservice.service.UserPreferenceService;
 import org.cresplanex.core.saga.orchestration.SagaDefinition;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 public class UpdateUserPreferenceSaga extends SagaModel<
@@ -24,12 +29,17 @@ public class UpdateUserPreferenceSaga extends SagaModel<
 
     private final SagaDefinition<UpdateUserPreferenceSagaState> sagaDefinition;
     private final UserPreferenceDomainEventPublisher domainEventPublisher;
+    private final UserPreferenceService userPreferenceLocalService;
 
     public UpdateUserPreferenceSaga(
+            UserPreferenceService userPreferenceLocalService,
             UserPreferenceServiceProxy userPreferenceService,
             UserPreferenceDomainEventPublisher domainEventPublisher
     ) {
         this.sagaDefinition = step()
+                .invokeLocal(this::validateUserPreference)
+                .onException(NotFoundUserPreferenceException.class, this::failureLocalExceptionPublish)
+                .step()
                 .invokeParticipant(
                         userPreferenceService.updateUserPreference,
                         UpdateUserPreferenceSagaState::makeUpdateUserPreferenceCommand
@@ -49,6 +59,7 @@ public class UpdateUserPreferenceSaga extends SagaModel<
                         UpdateUserPreferenceSagaState::makeUndoUpdateUserPreferenceCommand
                 )
                 .build();
+        this.userPreferenceLocalService = userPreferenceLocalService;
         this.domainEventPublisher = domainEventPublisher;
     }
 
@@ -83,6 +94,16 @@ public class UpdateUserPreferenceSaga extends SagaModel<
         return UserPreferenceUpdated.SuccessJobDomainEvent.TYPE;
     }
 
+    private void validateUserPreference(UpdateUserPreferenceSagaState state) throws NotFoundUserPreferenceException {
+        this.userPreferenceLocalService.validateUserPreferences(
+                List.of(state.getInitialData().getUserPreferenceId())
+        );
+
+        this.localProcessedEventPublish(
+                state, UserPreferenceServiceApplicationCode.SUCCESS, "User preference validated"
+        );
+    }
+
     private void handleUpdateUserPreferenceReply(
             UpdateUserPreferenceSagaState state, UpdateUserPreferenceReply.Success reply) {
         UpdateUserPreferenceReply.Success.Data data = reply.getData();
@@ -98,6 +119,7 @@ public class UpdateUserPreferenceSaga extends SagaModel<
     }
 
     public enum Action {
+        VALIDATE_USER_PREFERENCE,
         UPDATE_USER_PREFERENCE
     }
 

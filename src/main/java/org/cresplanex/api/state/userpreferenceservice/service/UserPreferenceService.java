@@ -2,6 +2,8 @@ package org.cresplanex.api.state.userpreferenceservice.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.cresplanex.api.state.common.entity.EntityWithPrevious;
+import org.cresplanex.api.state.common.saga.local.team.NotFoundTeamException;
+import org.cresplanex.api.state.common.saga.local.userpreference.NotFoundUserPreferenceException;
 import org.cresplanex.api.state.common.service.BaseService;
 import org.cresplanex.api.state.userpreferenceservice.entity.UserPreferenceEntity;
 import org.cresplanex.api.state.userpreferenceservice.exception.UserPreferenceNotFoundException;
@@ -78,6 +80,15 @@ public class UserPreferenceService extends BaseService {
         sagaInstanceFactory.create(updateUserPreferenceSaga, state);
 
         return jobId;
+    }
+
+    public void validateUserPreferences(List<String> userPreferenceIds) throws NotFoundUserPreferenceException {
+        userPreferenceRepository.countByUserPreferenceIdIn(userPreferenceIds)
+                .ifPresent(count -> {
+                    if (count != userPreferenceIds.size()) {
+                        throw new NotFoundUserPreferenceException(userPreferenceIds);
+                    }
+                });
     }
 
     public EntityWithPrevious<UserPreferenceEntity> update(String userPreferenceId, UserPreferenceEntity preference) {
