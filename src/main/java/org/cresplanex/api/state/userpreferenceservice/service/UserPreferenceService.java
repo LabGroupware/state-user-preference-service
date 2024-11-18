@@ -57,8 +57,7 @@ public class UserPreferenceService extends BaseService {
     }
 
     public void undoCreate(String userPreferenceId) {
-        UserPreferenceEntity preference = internalFindById(userPreferenceId);
-        userPreferenceRepository.delete(preference);
+        userPreferenceRepository.deleteById(userPreferenceId);
     }
 
     @Transactional
