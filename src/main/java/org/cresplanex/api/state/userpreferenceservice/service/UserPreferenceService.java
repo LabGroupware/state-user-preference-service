@@ -2,15 +2,22 @@ package org.cresplanex.api.state.userpreferenceservice.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.cresplanex.api.state.common.entity.EntityWithPrevious;
+import org.cresplanex.api.state.common.entity.ListEntityWithCount;
+import org.cresplanex.api.state.common.enums.PaginationType;
 import org.cresplanex.api.state.common.saga.local.team.NotFoundTeamException;
 import org.cresplanex.api.state.common.saga.local.userpreference.NotFoundUserPreferenceException;
 import org.cresplanex.api.state.common.service.BaseService;
 import org.cresplanex.api.state.userpreferenceservice.entity.UserPreferenceEntity;
+import org.cresplanex.api.state.userpreferenceservice.enums.UserPreferenceSortType;
 import org.cresplanex.api.state.userpreferenceservice.exception.UserPreferenceNotFoundException;
+import org.cresplanex.api.state.userpreferenceservice.filter.userpreference.LanguageFilter;
 import org.cresplanex.api.state.userpreferenceservice.repository.UserPreferenceRepository;
 import org.cresplanex.api.state.userpreferenceservice.saga.model.userpreference.UpdateUserPreferenceSaga;
 import org.cresplanex.api.state.userpreferenceservice.saga.state.userpreference.UpdateUserPreferenceSagaState;
+import org.cresplanex.api.state.userpreferenceservice.specification.UserPreferenceSpecifications;
 import org.cresplanex.core.saga.orchestration.SagaInstanceFactory;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
@@ -49,8 +56,49 @@ public class UserPreferenceService extends BaseService {
     }
 
     @Transactional(readOnly = true)
-    public List<UserPreferenceEntity> get() {
-        return userPreferenceRepository.findAll();
+    public ListEntityWithCount<UserPreferenceEntity> get(
+            PaginationType paginationType,
+            int limit,
+            int offset,
+            String cursor,
+            UserPreferenceSortType sortType,
+            boolean withCount,
+            LanguageFilter languageFilter
+    ) {
+        Specification<UserPreferenceEntity> spec = Specification.where(
+                UserPreferenceSpecifications.withLanguageFilter(languageFilter));
+
+        List<UserPreferenceEntity> data = switch (paginationType) {
+            case OFFSET ->
+                    userPreferenceRepository.findListWithOffsetPagination(spec, sortType, PageRequest.of(offset / limit, limit));
+            case CURSOR -> userPreferenceRepository.findList(spec, sortType); // TODO: Implement cursor pagination
+            default -> userPreferenceRepository.findList(spec, sortType);
+        };
+
+        int count = 0;
+        if (withCount){
+            count = userPreferenceRepository.countList();
+        }
+        return new ListEntityWithCount<>(
+                data,
+                count
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public List<UserPreferenceEntity> getByUserIds(
+            List<String> userIds,
+            UserPreferenceSortType sortType
+    ) {
+        return userPreferenceRepository.findListByUserIds(userIds, sortType);
+    }
+
+    @Transactional(readOnly = true)
+    public List<UserPreferenceEntity> getByUserPreferenceIds(
+            List<String> userPreferenceIds,
+            UserPreferenceSortType sortType
+    ) {
+        return userPreferenceRepository.findListByUserPreferenceIds(userPreferenceIds, sortType);
     }
 
     public UserPreferenceEntity create(UserPreferenceEntity preference) {

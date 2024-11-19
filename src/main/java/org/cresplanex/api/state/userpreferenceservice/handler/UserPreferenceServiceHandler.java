@@ -1,7 +1,14 @@
 package org.cresplanex.api.state.userpreferenceservice.handler;
 
+import build.buf.gen.cresplanex.nova.v1.Count;
+import build.buf.gen.cresplanex.nova.v1.SortOrder;
 import build.buf.gen.userpreference.v1.*;
+import build.buf.gen.userprofile.v1.*;
+import org.cresplanex.api.state.common.entity.ListEntityWithCount;
+import org.cresplanex.api.state.common.enums.PaginationType;
 import org.cresplanex.api.state.userpreferenceservice.entity.UserPreferenceEntity;
+import org.cresplanex.api.state.userpreferenceservice.enums.UserPreferenceSortType;
+import org.cresplanex.api.state.userpreferenceservice.filter.userpreference.LanguageFilter;
 import org.cresplanex.api.state.userpreferenceservice.mapper.proto.ProtoMapper;
 
 import io.grpc.stub.StreamObserver;
@@ -43,14 +50,68 @@ public class UserPreferenceServiceHandler extends UserPreferenceServiceGrpc.User
         responseObserver.onCompleted();
     }
 
-    // TODO: pagination + with count
     @Override
     public void getUserPreferences(GetUserPreferencesRequest request, StreamObserver<GetUserPreferencesResponse> responseObserver) {
-        List<UserPreferenceEntity> userPreferences = userPreferenceService.get();
+        UserPreferenceSortType sortType = switch (request.getSort().getOrderField()) {
+            default -> (request.getSort().getOrder() == SortOrder.SORT_ORDER_ASC) ?
+                    UserPreferenceSortType.CREATED_AT_ASC : UserPreferenceSortType.CREATED_AT_DESC;
+        };
+        PaginationType paginationType;
+        switch (request.getPagination().getType()) {
+            case PAGINATION_TYPE_CURSOR -> paginationType = PaginationType.CURSOR;
+            case PAGINATION_TYPE_OFFSET -> paginationType = PaginationType.OFFSET;
+            default -> paginationType = PaginationType.NONE;
+        }
 
-        List<UserPreference> userPreferenceProtos = userPreferences.stream()
+        LanguageFilter languageFilter = new LanguageFilter(
+                request.getFilterLanguage().getHasValue(), request.getFilterLanguage().getLanguagesList()
+        );
+
+        ListEntityWithCount<UserPreferenceEntity> userPreferences = userPreferenceService.get(
+                paginationType, request.getPagination().getLimit(), request.getPagination().getOffset(),
+                request.getPagination().getCursor(), sortType, request.getWithCount(), languageFilter);
+
+        List<UserPreference> userPreferenceProtos = userPreferences.getData().stream()
                 .map(ProtoMapper::convert).toList();
         GetUserPreferencesResponse response = GetUserPreferencesResponse.newBuilder()
+                .addAllUserPreferences(userPreferenceProtos)
+                .setCount(
+                        Count.newBuilder().setIsValid(request.getWithCount())
+                                .setCount(userPreferences.getCount()).build()
+                )
+                .build();
+
+        responseObserver.onNext(response);
+        responseObserver.onCompleted();
+    }
+
+    @Override
+    public void getPluralUserPreferences(GetPluralUserPreferencesRequest request, StreamObserver<GetPluralUserPreferencesResponse> responseObserver) {
+        UserPreferenceSortType sortType = switch (request.getSort().getOrderField()) {
+            default -> (request.getSort().getOrder() == SortOrder.SORT_ORDER_ASC) ?
+                    UserPreferenceSortType.CREATED_AT_ASC : UserPreferenceSortType.CREATED_AT_DESC;
+        };
+        List<UserPreference> userPreferenceProtos = this.userPreferenceService.getByUserPreferenceIds(
+                        request.getUserPreferenceIdsList(), sortType).stream()
+                .map(ProtoMapper::convert).toList();
+        GetPluralUserPreferencesResponse response = GetPluralUserPreferencesResponse.newBuilder()
+                .addAllUserPreferences(userPreferenceProtos)
+                .build();
+
+        responseObserver.onNext(response);
+        responseObserver.onCompleted();
+    }
+
+    @Override
+    public void getPluralUserPreferencesByUserId(GetPluralUserPreferencesByUserIdRequest request, StreamObserver<GetPluralUserPreferencesByUserIdResponse> responseObserver) {
+        UserPreferenceSortType sortType = switch (request.getSort().getOrderField()) {
+            default -> (request.getSort().getOrder() == SortOrder.SORT_ORDER_ASC) ?
+                    UserPreferenceSortType.CREATED_AT_ASC : UserPreferenceSortType.CREATED_AT_DESC;
+        };
+        List<UserPreference> userPreferenceProtos = this.userPreferenceService.getByUserIds(
+                        request.getUserIdsList(), sortType).stream()
+                .map(ProtoMapper::convert).toList();
+        GetPluralUserPreferencesByUserIdResponse response = GetPluralUserPreferencesByUserIdResponse.newBuilder()
                 .addAllUserPreferences(userPreferenceProtos)
                 .build();
 
