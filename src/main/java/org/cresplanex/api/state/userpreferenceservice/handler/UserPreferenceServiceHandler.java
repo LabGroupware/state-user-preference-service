@@ -3,7 +3,6 @@ package org.cresplanex.api.state.userpreferenceservice.handler;
 import build.buf.gen.cresplanex.nova.v1.Count;
 import build.buf.gen.cresplanex.nova.v1.SortOrder;
 import build.buf.gen.userpreference.v1.*;
-import build.buf.gen.userprofile.v1.*;
 import org.cresplanex.api.state.common.entity.ListEntityWithCount;
 import org.cresplanex.api.state.common.enums.PaginationType;
 import org.cresplanex.api.state.userpreferenceservice.entity.UserPreferenceEntity;

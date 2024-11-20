@@ -4,8 +4,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.cresplanex.api.state.common.entity.EntityWithPrevious;
 import org.cresplanex.api.state.common.entity.ListEntityWithCount;
 import org.cresplanex.api.state.common.enums.PaginationType;
-import org.cresplanex.api.state.common.saga.local.team.NotFoundTeamException;
-import org.cresplanex.api.state.common.saga.local.userpreference.NotFoundUserPreferenceException;
 import org.cresplanex.api.state.common.service.BaseService;
 import org.cresplanex.api.state.userpreferenceservice.entity.UserPreferenceEntity;
 import org.cresplanex.api.state.userpreferenceservice.enums.UserPreferenceSortType;
@@ -77,7 +75,7 @@ public class UserPreferenceService extends BaseService {
 
         int count = 0;
         if (withCount){
-            count = userPreferenceRepository.countList();
+            count = userPreferenceRepository.countList(spec);
         }
         return new ListEntityWithCount<>(
                 data,

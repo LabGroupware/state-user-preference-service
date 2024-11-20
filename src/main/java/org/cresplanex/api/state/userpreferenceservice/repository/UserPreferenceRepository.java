@@ -47,5 +47,5 @@ public interface UserPreferenceRepository extends JpaRepository<UserPreferenceEn
                                                             UserPreferenceSortType sortType, Pageable pageable);
 
     @Query("SELECT COUNT(u) FROM UserPreferenceEntity u")
-    int countList();
+    int countList(Specification<UserPreferenceEntity> specification);
 }
