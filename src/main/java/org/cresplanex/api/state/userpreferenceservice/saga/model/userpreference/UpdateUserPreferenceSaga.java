@@ -15,7 +15,6 @@ import org.cresplanex.api.state.userpreferenceservice.event.publisher.UserPrefer
 import org.cresplanex.api.state.userpreferenceservice.saga.proxy.UserPreferenceServiceProxy;
 import org.cresplanex.api.state.userpreferenceservice.saga.state.userpreference.UpdateUserPreferenceSagaState;
 import org.cresplanex.api.state.userpreferenceservice.service.UserPreferenceLocalValidateService;
-import org.cresplanex.api.state.userpreferenceservice.service.UserPreferenceService;
 import org.cresplanex.core.saga.orchestration.SagaDefinition;
 import org.springframework.stereotype.Component;
 
