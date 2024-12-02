@@ -23,7 +23,7 @@ grpc:
       keepAliveWithoutCalls: true
       negotiationType: PLAINTEXT
 server:
-  port: ${USER_PREFERENCE_SERVICE_PORT:8080}
+  port: ${USER_PREFERENCE_SERVICE_PORT:8180}
 core:
   kafka: # kafkaプロパティ
     bootstrap:
