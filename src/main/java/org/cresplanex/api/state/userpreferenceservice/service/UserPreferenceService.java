@@ -15,6 +15,8 @@ import org.cresplanex.api.state.userpreferenceservice.saga.state.userpreference.
 import org.cresplanex.api.state.userpreferenceservice.specification.UserPreferenceSpecifications;
 import org.cresplanex.core.saga.orchestration.SagaInstanceFactory;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
@@ -66,12 +68,15 @@ public class UserPreferenceService extends BaseService {
         Specification<UserPreferenceEntity> spec = Specification.where(
                 UserPreferenceSpecifications.withLanguageFilter(languageFilter));
 
-        List<UserPreferenceEntity> data = switch (paginationType) {
-            case OFFSET ->
-                    userPreferenceRepository.findListWithOffsetPagination(spec, sortType, PageRequest.of(offset / limit, limit));
-            case CURSOR -> userPreferenceRepository.findList(spec, sortType); // TODO: Implement cursor pagination
-            default -> userPreferenceRepository.findList(spec, sortType);
+        Sort sort = createSort(sortType);
+
+        Pageable pageable = switch (paginationType) {
+            case OFFSET -> PageRequest.of(offset / limit, limit, sort);
+            case CURSOR -> PageRequest.of(0, limit, sort); // TODO: Implement cursor pagination
+            default -> Pageable.unpaged(sort);
         };
+
+        List<UserPreferenceEntity> data = userPreferenceRepository.findList(spec, pageable);
 
         int count = 0;
         if (withCount){
@@ -88,7 +93,9 @@ public class UserPreferenceService extends BaseService {
             List<String> userIds,
             UserPreferenceSortType sortType
     ) {
-        return userPreferenceRepository.findListByUserIds(userIds, sortType);
+        Specification<UserPreferenceEntity> spec = (root, query, criteriaBuilder) ->
+                root.get("userId").in(userIds);
+        return userPreferenceRepository.findList(spec, Pageable.unpaged(createSort(sortType)));
     }
 
     @Transactional(readOnly = true)
@@ -96,7 +103,9 @@ public class UserPreferenceService extends BaseService {
             List<String> userPreferenceIds,
             UserPreferenceSortType sortType
     ) {
-        return userPreferenceRepository.findListByUserPreferenceIds(userPreferenceIds, sortType);
+        Specification<UserPreferenceEntity> spec = (root, query, criteriaBuilder) ->
+                root.get("userPreferenceId").in(userPreferenceIds);
+        return userPreferenceRepository.findList(spec, Pageable.unpaged(createSort(sortType)));
     }
 
     public UserPreferenceEntity create(UserPreferenceEntity preference) {
@@ -143,5 +152,12 @@ public class UserPreferenceService extends BaseService {
         existingPreference.setTheme(preference.getTheme());
         existingPreference.setTimezone(preference.getTimezone());
         userPreferenceRepository.save(existingPreference);
+    }
+
+    private Sort createSort(UserPreferenceSortType sortType) {
+        return switch (sortType) {
+            case CREATED_AT_ASC -> Sort.by(Sort.Order.asc("createdAt"));
+            case CREATED_AT_DESC -> Sort.by(Sort.Order.desc("createdAt"));
+        };
     }
 }

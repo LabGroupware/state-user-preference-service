@@ -25,26 +25,8 @@ public interface UserPreferenceRepository extends JpaRepository<UserPreferenceEn
      */
     Optional<Long> countByUserPreferenceIdIn(List<String> userPreferenceIds);
 
-    @Query("SELECT u FROM UserPreferenceEntity u WHERE u.userId IN :userIds ORDER BY " +
-            "CASE WHEN :sortType = 'CREATED_AT_ASC' THEN u.createdAt END ASC, " +
-            "CASE WHEN :sortType = 'CREATED_AT_DESC' THEN u.createdAt END DESC")
-    List<UserPreferenceEntity> findListByUserIds(List<String> userIds, UserPreferenceSortType sortType);
-
-    @Query("SELECT u FROM UserPreferenceEntity u WHERE u.userPreferenceId IN :userPreference ORDER BY " +
-            "CASE WHEN :sortType = 'CREATED_AT_ASC' THEN u.createdAt END ASC, " +
-            "CASE WHEN :sortType = 'CREATED_AT_DESC' THEN u.createdAt END DESC")
-    List<UserPreferenceEntity> findListByUserPreferenceIds(List<String> userPreferenceIds, UserPreferenceSortType sortType);
-
-    @Query("SELECT u FROM UserPreferenceEntity u ORDER BY " +
-            "CASE WHEN :sortType = 'CREATED_AT_ASC' THEN u.createdAt END ASC, " +
-            "CASE WHEN :sortType = 'CREATED_AT_DESC' THEN u.createdAt END DESC")
-    List<UserPreferenceEntity> findList(Specification<UserPreferenceEntity> specification, UserPreferenceSortType sortType);
-
-    @Query("SELECT u FROM UserPreferenceEntity u ORDER BY " +
-            "CASE WHEN :sortType = 'CREATED_AT_ASC' THEN u.createdAt END ASC, " +
-            "CASE WHEN :sortType = 'CREATED_AT_DESC' THEN u.createdAt END DESC")
-    List<UserPreferenceEntity> findListWithOffsetPagination(Specification<UserPreferenceEntity> specification,
-                                                            UserPreferenceSortType sortType, Pageable pageable);
+    @Query("SELECT u FROM UserPreferenceEntity u")
+    List<UserPreferenceEntity> findList(Specification<UserPreferenceEntity> specification, Pageable pageable);
 
     @Query("SELECT COUNT(u) FROM UserPreferenceEntity u")
     int countList(Specification<UserPreferenceEntity> specification);
