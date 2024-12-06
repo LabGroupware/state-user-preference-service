@@ -11,6 +11,6 @@ import org.springframework.stereotype.Component;
 public class UserPreferenceDomainEventPublisher extends AggregateDomainEventPublisher<UserPreferenceEntity, UserPreferenceDomainEvent> {
 
     public UserPreferenceDomainEventPublisher(DomainEventPublisher eventPublisher) {
-        super(eventPublisher, UserPreferenceEntity.class, EventAggregateType.USER_PROFILE);
+        super(eventPublisher, UserPreferenceEntity.class, EventAggregateType.USER_PREFERENCE);
     }
 }

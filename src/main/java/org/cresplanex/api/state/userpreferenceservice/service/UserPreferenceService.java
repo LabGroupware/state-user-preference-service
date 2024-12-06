@@ -138,12 +138,12 @@ public class UserPreferenceService extends BaseService {
     }
 
     public EntityWithPrevious<UserPreferenceEntity> update(String operatorId, String userPreferenceId, UserPreferenceEntity preference) {
-        UserPreferenceEntity existingPreference = internalFindById(userPreferenceId);
-        UserPreferenceEntity updatedPreference = existingPreference.clone();
-        updatedPreference.setLanguage(preference.getLanguage());
-        updatedPreference.setTheme(preference.getTheme());
-        updatedPreference.setTimezone(preference.getTimezone());
-        return new EntityWithPrevious<>(userPreferenceRepository.save(updatedPreference), existingPreference);
+        UserPreferenceEntity newPreference = internalFindById(userPreferenceId);
+        UserPreferenceEntity existingPreference = newPreference.clone();
+        newPreference.setLanguage(preference.getLanguage());
+        newPreference.setTheme(preference.getTheme());
+        newPreference.setTimezone(preference.getTimezone());
+        return new EntityWithPrevious<>(userPreferenceRepository.save(newPreference), existingPreference);
     }
 
     public void undoUpdate(String userPreferenceId, UserPreferenceEntity preference) {
