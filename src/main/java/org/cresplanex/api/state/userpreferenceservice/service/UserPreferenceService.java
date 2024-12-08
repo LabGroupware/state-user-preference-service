@@ -14,6 +14,7 @@ import org.cresplanex.api.state.userpreferenceservice.saga.model.userpreference.
 import org.cresplanex.api.state.userpreferenceservice.saga.state.userpreference.UpdateUserPreferenceSagaState;
 import org.cresplanex.api.state.userpreferenceservice.specification.UserPreferenceSpecifications;
 import org.cresplanex.core.saga.orchestration.SagaInstanceFactory;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -76,14 +77,14 @@ public class UserPreferenceService extends BaseService {
             default -> Pageable.unpaged(sort);
         };
 
-        List<UserPreferenceEntity> data = userPreferenceRepository.findList(spec, pageable);
+        Page<UserPreferenceEntity> data = userPreferenceRepository.findAll(spec, pageable);
 
         int count = 0;
         if (withCount){
-            count = userPreferenceRepository.countList(spec);
+            count = (int) data.getTotalElements();
         }
         return new ListEntityWithCount<>(
-                data,
+                data.getContent(),
                 count
         );
     }
@@ -93,9 +94,10 @@ public class UserPreferenceService extends BaseService {
             List<String> userIds,
             UserPreferenceSortType sortType
     ) {
-        Specification<UserPreferenceEntity> spec = (root, query, criteriaBuilder) ->
-                root.get("userId").in(userIds);
-        return userPreferenceRepository.findList(spec, Pageable.unpaged(createSort(sortType)));
+        Specification<UserPreferenceEntity> spec = Specification
+                .where(UserPreferenceSpecifications.whereUserIds(userIds));
+
+        return userPreferenceRepository.findAll(spec, createSort(sortType));
     }
 
     @Transactional(readOnly = true)
@@ -103,9 +105,10 @@ public class UserPreferenceService extends BaseService {
             List<String> userPreferenceIds,
             UserPreferenceSortType sortType
     ) {
-        Specification<UserPreferenceEntity> spec = (root, query, criteriaBuilder) ->
-                root.get("userPreferenceId").in(userPreferenceIds);
-        return userPreferenceRepository.findList(spec, Pageable.unpaged(createSort(sortType)));
+        Specification<UserPreferenceEntity> spec = Specification
+                .where(UserPreferenceSpecifications.whereUserPreferenceIds(userPreferenceIds));
+
+        return userPreferenceRepository.findAll(spec, createSort(sortType));
     }
 
     public UserPreferenceEntity create(UserPreferenceEntity preference) {
